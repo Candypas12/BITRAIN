@@ -1,16 +1,109 @@
 "use client"
 
-import { FileText, ArrowUp, Paperclip, BookOpenCheck, GraduationCap, Menu } from "lucide-react"
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
+import { ArrowUp, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-interface ChatAreaProps {
-  onOpenSidebar?: () => void
-  sidebarCollapsed?: boolean
+interface ChatMessage {
+  role: "user" | "model"
+  content: string
 }
 
-export function ChatArea({ onOpenSidebar, sidebarCollapsed }: ChatAreaProps) {
+function ChatComposer({
+  value,
+  onChange,
+  onKeyDown,
+  onSend,
+  disabled,
+  minHeight,
+}: {
+  value: string
+  onChange: (value: string) => void
+  onKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void
+  onSend: () => void
+  disabled: boolean
+  minHeight: string
+}) {
+  return (
+    <div className="input-3d bg-gradient-to-br from-secondary/70 via-secondary/60 to-secondary/50 backdrop-blur-xl rounded-2xl border border-border/50 p-4 shadow-2xl">
+      <div className="space-y-4">
+        <div className="flex items-start gap-3">
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={onKeyDown}
+            placeholder="Ask BITRAIN anything..."
+            className={cn(
+              "flex-1 bg-transparent border-none outline-none resize-none text-foreground placeholder:text-muted-foreground text-lg font-normal",
+              minHeight,
+            )}
+          />
+        </div>
+        <div className="flex items-center justify-end pt-2 border-t border-border/30">
+          <Button
+            size="icon"
+            onClick={onSend}
+            disabled={disabled}
+            className="btn-3d btn-glow h-9 w-9 rounded-full bg-gradient-to-br from-primary via-gray-900 to-black hover:from-gray-900 hover:to-black text-white shadow-xl disabled:opacity-40"
+            aria-label="Send message"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function ChatArea() {
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, isLoading])
+
+  const handleSend = async () => {
+    const trimmed = input.trim()
+    if (!trimmed || isLoading) return
+
+    const nextMessages: ChatMessage[] = [...messages, { role: "user", content: trimmed }]
+    setMessages(nextMessages)
+    setInput("")
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: nextMessages }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Something went wrong.")
+      setMessages((prev) => [...prev, { role: "model", content: data.content as string }])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault()
+      handleSend()
+    }
+  }
+
+  const hasMessages = messages.length > 0
+
   return (
     <main className="flex-1 flex flex-col relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
@@ -35,19 +128,7 @@ export function ChatArea({ onOpenSidebar, sidebarCollapsed }: ChatAreaProps) {
 
       {/* Header */}
       <header className="relative z-10 flex items-center gap-3 px-6 py-4 border-b border-border/50 backdrop-blur-sm bg-background/30">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onOpenSidebar}
-          className="btn-3d md:hidden h-9 w-9 text-foreground shrink-0"
-          aria-label="Open sidebar"
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
-
-        {/* BITRAIN combined logo — shown in top nav only when the sidebar logo is hidden
-            (always on mobile since the sidebar is off-canvas, and on desktop when collapsed) */}
-        <div className={cn("flex items-center gap-2", sidebarCollapsed ? "md:flex" : "md:hidden")}>
+        <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-primary/10 border border-border/30 shadow-lg">
             <Image src="/LOGO-DARK.svg" alt="BITRAIN logo" width={36} height={36} className="object-cover" />
           </div>
@@ -57,73 +138,67 @@ export function ChatArea({ onOpenSidebar, sidebarCollapsed }: ChatAreaProps) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-6">
-        {/* Title */}
-        <h1 className="text-4xl font-semibold text-foreground mb-8 text-center font-[var(--font-heading)] tracking-tight text-balance">
-          How can BITRAIN help you today?
-        </h1>
-
-        {/* Quick Actions */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
-          <Button
-            variant="secondary"
-            className="btn-3d btn-glow gap-2 bg-gradient-to-br from-secondary/90 to-secondary/70 text-foreground hover:from-secondary/70 hover:to-secondary/50 backdrop-blur-sm shadow-lg font-medium"
-          >
-            <FileText className="w-4 h-4" />
-            Summarize Notes
-          </Button>
-          <Button
-            variant="secondary"
-            className="btn-3d btn-glow gap-2 bg-gradient-to-br from-secondary/90 to-secondary/70 text-foreground hover:from-secondary/70 hover:to-secondary/50 backdrop-blur-sm shadow-lg font-medium"
-          >
-            <BookOpenCheck className="w-4 h-4" />
-            Explain a Concept
-          </Button>
-          <Button
-            variant="secondary"
-            className="btn-3d btn-glow gap-2 bg-gradient-to-br from-secondary/90 to-secondary/70 text-foreground hover:from-secondary/70 hover:to-secondary/50 backdrop-blur-sm shadow-lg font-medium"
-          >
-            <GraduationCap className="w-4 h-4" />
-            Ask from PYQs
-          </Button>
-        </div>
-
-        {/* Input Area */}
-        <div className="w-full max-w-4xl">
-          <div className="input-3d bg-gradient-to-br from-secondary/70 via-secondary/60 to-secondary/50 backdrop-blur-xl rounded-2xl border border-border/50 p-4 shadow-2xl">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <textarea
-                  placeholder="Ask BITRAIN anything..."
-                  className="flex-1 bg-transparent border-none outline-none resize-none text-foreground placeholder:text-muted-foreground text-lg min-h-[80px] font-normal"
-                />
-              </div>
-              <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                <div className="flex items-center gap-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="btn-3d gap-2 text-muted-foreground hover:text-foreground"
+      {hasMessages ? (
+        <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="max-w-4xl mx-auto w-full space-y-4">
+              {messages.map((message, index) => (
+                <div key={index} className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}>
+                  <div
+                    className={cn(
+                      "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap",
+                      message.role === "user"
+                        ? "bg-gradient-to-br from-primary via-gray-900 to-black text-white"
+                        : "bg-secondary/60 border border-border/50 text-foreground backdrop-blur-sm",
+                    )}
                   >
-                    <Paperclip className="w-4 h-4" />
-                    Attach File
-                  </Button>
+                    {message.content}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="icon"
-                    className="btn-3d btn-glow h-9 w-9 rounded-full bg-gradient-to-br from-primary via-gray-900 to-black hover:from-gray-900 hover:to-black text-white shadow-xl"
-                    aria-label="Send message"
-                  >
-                    <ArrowUp className="w-5 h-5" />
-                  </Button>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="rounded-2xl px-4 py-3 bg-secondary/60 border border-border/50 backdrop-blur-sm">
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  </div>
                 </div>
-              </div>
+              )}
+              {error && <p className="text-sm text-destructive">{error}</p>}
+              <div ref={bottomRef} />
+            </div>
+          </div>
+          <div className="px-6 pb-6">
+            <div className="max-w-4xl mx-auto w-full">
+              <ChatComposer
+                value={input}
+                onChange={setInput}
+                onKeyDown={handleKeyDown}
+                onSend={handleSend}
+                disabled={isLoading || !input.trim()}
+                minHeight="min-h-[56px]"
+              />
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 pb-6">
+          <h1 className="text-4xl font-semibold text-foreground mb-8 text-center font-[var(--font-heading)] tracking-tight text-balance">
+            How can BITRAIN help you today?
+          </h1>
+
+          <div className="w-full max-w-4xl space-y-3">
+            {error && <p className="text-sm text-destructive text-center">{error}</p>}
+            <ChatComposer
+              value={input}
+              onChange={setInput}
+              onKeyDown={handleKeyDown}
+              onSend={handleSend}
+              disabled={isLoading || !input.trim()}
+              minHeight="min-h-[80px]"
+            />
+          </div>
+        </div>
+      )}
     </main>
   )
 }

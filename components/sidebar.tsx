@@ -1,7 +1,8 @@
 "use client"
 
-import { MessageSquarePlus, MessageSquare, User, LogOut, PanelLeftClose, PanelLeft, X } from "lucide-react"
+import { MessageSquare, User, LogOut, PanelLeftClose, PanelLeft, X } from "lucide-react"
 import Image from "next/image"
+import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -15,7 +16,6 @@ export interface Conversation {
 interface SidebarProps {
   activeView: View
   onNavigate: (view: View) => void
-  onNewChat: () => void
   conversations: Conversation[]
   onSelectConversation: (id: string) => void
   collapsed: boolean
@@ -27,7 +27,6 @@ interface SidebarProps {
 export function Sidebar({
   activeView,
   onNavigate,
-  onNewChat,
   conversations,
   onSelectConversation,
   collapsed,
@@ -104,24 +103,8 @@ export function Sidebar({
           </div>
         )}
 
-        {/* New Chat Button */}
-        <div className="p-3">
-          <Button
-            variant="secondary"
-            onClick={onNewChat}
-            className={cn(
-              "btn-3d btn-glow w-full gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 font-medium",
-              collapsed ? "md:justify-center md:px-0" : "justify-start",
-            )}
-            aria-label="New chat"
-          >
-            <MessageSquarePlus className="w-4 h-4 shrink-0" />
-            <span className={cn(collapsed && "md:hidden")}>New Chat</span>
-          </Button>
-        </div>
-
         {/* Recent Chats */}
-        <div className="px-3 flex-1 overflow-y-auto">
+        <div className="px-3 pt-3 flex-1 overflow-y-auto">
           <div className="mb-4">
             <h3
               className={cn(
@@ -133,7 +116,7 @@ export function Sidebar({
             </h3>
             {conversations.length === 0 ? (
               <p className={cn("px-3 text-sm text-muted-foreground leading-relaxed", collapsed && "md:hidden")}>
-                No conversations yet. Start a new chat.
+                No conversations yet.
               </p>
             ) : (
               <div className="space-y-1">
@@ -173,6 +156,7 @@ export function Sidebar({
           </Button>
           <Button
             variant="ghost"
+            onClick={() => signOut({ callbackUrl: "/" })}
             className={cn(
               "btn-3d w-full gap-3 text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive font-medium",
               collapsed ? "md:justify-center md:px-0" : "justify-start",

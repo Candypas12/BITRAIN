@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
@@ -32,14 +33,14 @@ export function Navigation() {
         <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
           Features
         </a>
-        <a href="#feedback" className="text-muted-foreground hover:text-foreground transition-colors">
-          Feedback
-        </a>
       </div>
 
-      {/* CTA Button */}
-      <Button className="btn-3d btn-glow gap-2 bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground hover:from-primary/70 hover:to-primary/50 backdrop-blur-sm border border-border/30 shadow-lg font-medium">
-        Continue with Google
+      {/* CTA Button — TEMPORARY: goes straight to /dashboard until Google OAuth credentials are configured, see auth.ts */}
+      <Button
+        asChild
+        className="btn-3d btn-glow gap-2 bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground hover:from-primary/70 hover:to-primary/50 backdrop-blur-sm border border-border/30 shadow-lg font-medium"
+      >
+        <Link href="/dashboard">Use BITRAIN</Link>
       </Button>
     </nav>
   )

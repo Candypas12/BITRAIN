@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ParticleOrb } from "@/components/particle-orb"
 
@@ -48,14 +49,19 @@ export function HeroSection() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col md:flex-row gap-4">
-          <Button className="btn-3d btn-glow px-8 py-6 bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground hover:from-primary/70 hover:to-primary/50 backdrop-blur-sm border border-border/30 shadow-lg font-medium text-base">
-            Continue with Google
+          {/* TEMPORARY: goes straight to /dashboard until Google OAuth credentials are configured, see auth.ts */}
+          <Button
+            asChild
+            className="btn-3d btn-glow px-8 py-6 bg-gradient-to-br from-primary/90 to-primary/70 text-primary-foreground hover:from-primary/70 hover:to-primary/50 backdrop-blur-sm border border-border/30 shadow-lg font-medium text-base"
+          >
+            <Link href="/dashboard">Use BITRAIN</Link>
           </Button>
-          <Button 
+          <Button
+            asChild
             variant="outline"
             className="btn-3d px-8 py-6 bg-transparent text-foreground border border-border/50 hover:bg-secondary/20 backdrop-blur-sm shadow-lg font-medium text-base"
           >
-            Learn More
+            <a href="#features">Learn More</a>
           </Button>
         </div>
       </div>

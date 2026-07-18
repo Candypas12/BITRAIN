@@ -9,7 +9,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* About */}
-          <div>
+          <div id="about">
             <h4 className="font-semibold text-foreground mb-4 font-[var(--font-heading)]">About</h4>
             <p className="text-muted-foreground text-sm leading-relaxed">
               BITRAIN is an AI-powered academic assistant designed specifically for engineering students.
@@ -30,27 +30,18 @@ export function Footer() {
                   Features
                 </a>
               </li>
-              <li>
-                <a href="#feedback" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                  Feedback
-                </a>
-              </li>
             </ul>
           </div>
 
-          {/* Privacy */}
+          {/* Legal */}
           <div>
             <h4 className="font-semibold text-foreground mb-4 font-[var(--font-heading)]">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#privacy" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                  Privacy Policy
-                </a>
+                <span className="text-muted-foreground text-sm">Privacy Policy (coming soon)</span>
               </li>
               <li>
-                <a href="#contact" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                  Contact
-                </a>
+                <span className="text-muted-foreground text-sm">Contact (coming soon)</span>
               </li>
             </ul>
           </div>
@@ -60,7 +51,12 @@ export function Footer() {
             <h4 className="font-semibold text-foreground mb-4 font-[var(--font-heading)]">Social</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#github" className="text-muted-foreground hover:text-foreground transition-colors text-sm flex items-center gap-2">
+                <a
+                  href="https://github.com/Candypas12/BITRAIN"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm flex items-center gap-2"
+                >
                   <Github className="w-4 h-4" />
                   GitHub
                 </a>
@@ -85,15 +81,9 @@ export function Footer() {
               </p>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <a href="#privacy" className="hover:text-foreground transition-colors">
-                Privacy
-              </a>
-              <a href="#terms" className="hover:text-foreground transition-colors">
-                Terms
-              </a>
-              <a href="#contact" className="hover:text-foreground transition-colors">
-                Contact
-              </a>
+              <span>Privacy</span>
+              <span>Terms</span>
+              <span>Contact</span>
             </div>
           </div>
         </div>

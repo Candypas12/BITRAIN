@@ -1,0 +1,75 @@
+import { GoogleGenAI } from "@google/genai"
+import { NextResponse } from "next/server"
+
+// Rolling alias to Google's current recommended free-tier flash model —
+// avoids hardcoding a dated model name that gets deprecated for new API keys.
+const MODEL = "gemini-flash-latest"
+const MAX_MESSAGES = 50
+const MAX_MESSAGE_LENGTH = 8000
+
+interface ChatMessage {
+  role: "user" | "model"
+  content: string
+}
+
+function isChatMessage(value: unknown): value is ChatMessage {
+  if (!value || typeof value !== "object") return false
+  const { role, content } = value as Record<string, unknown>
+  return (
+    (role === "user" || role === "model") &&
+    typeof content === "string" &&
+    content.trim().length > 0 &&
+    content.length <= MAX_MESSAGE_LENGTH
+  )
+}
+
+export async function POST(req: Request) {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "GEMINI_API_KEY is not configured on the server." },
+      { status: 500 },
+    )
+  }
+
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 })
+  }
+
+  const messages = (body as Record<string, unknown>)?.messages
+  if (!Array.isArray(messages) || messages.length === 0 || !messages.every(isChatMessage)) {
+    return NextResponse.json({ error: "messages must be a non-empty array of { role, content }." }, { status: 400 })
+  }
+  if (messages.length > MAX_MESSAGES) {
+    return NextResponse.json({ error: `Conversation too long (max ${MAX_MESSAGES} messages).` }, { status: 400 })
+  }
+
+  const ai = new GoogleGenAI({ apiKey })
+
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL,
+      contents: messages.map((message) => ({
+        role: message.role,
+        parts: [{ text: message.content }],
+      })),
+      config: {
+        systemInstruction:
+          "You are BITRAIN, an AI academic assistant for engineering students. Give clear, accurate, concise answers.",
+      },
+    })
+
+    const text = response.text
+    if (!text) {
+      return NextResponse.json({ error: "Gemini returned an empty response." }, { status: 502 })
+    }
+
+    return NextResponse.json({ content: text })
+  } catch (error) {
+    console.error("Gemini request failed:", error)
+    return NextResponse.json({ error: "Failed to get a response from Gemini." }, { status: 502 })
+  }
+}
