@@ -49,7 +49,7 @@ export function ChatArea({ onOpenSidebar, sidebarCollapsed }: ChatAreaProps) {
             (always on mobile since the sidebar is off-canvas, and on desktop when collapsed) */}
         <div className={cn("flex items-center gap-2", sidebarCollapsed ? "md:flex" : "md:hidden")}>
           <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-primary/10 border border-border/30 shadow-lg">
-            <Image src="/bitrain-logo.png" alt="BITRAIN logo" width={36} height={36} className="object-cover" />
+            <Image src="/LOGO-DARK.svg" alt="BITRAIN logo" width={36} height={36} className="object-cover" />
           </div>
           <span className="text-lg font-semibold text-foreground font-[var(--font-heading)] tracking-tight">
             BITRAIN

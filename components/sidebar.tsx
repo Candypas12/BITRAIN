@@ -59,7 +59,7 @@ export function Sidebar({
           {/* BITRAIN logo — shown here only when the sidebar is expanded */}
           <div className={cn("flex items-center gap-2 overflow-hidden", collapsed && "md:hidden")}>
             <div className="w-8 h-8 shrink-0 rounded-lg overflow-hidden flex items-center justify-center bg-primary/10">
-              <Image src="/bitrain-logo.png" alt="BITRAIN logo" width={32} height={32} className="object-cover" />
+              <Image src="/LOGO-DARK.svg" alt="BITRAIN logo" width={32} height={32} className="object-cover" />
             </div>
             <span className="text-lg font-semibold text-sidebar-foreground font-[var(--font-heading)] tracking-tight whitespace-nowrap">
               BITRAIN
