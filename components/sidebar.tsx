@@ -1,141 +1,189 @@
-import {
-  MessageSquarePlus,
-  MessageSquare,
-  Archive,
-  BookOpen,
-  FolderPlus,
-  ImageIcon,
-  Presentation,
-  FileText,
-  Crown,
-} from "lucide-react"
+"use client"
+
+import { MessageSquarePlus, MessageSquare, User, LogOut, PanelLeftClose, PanelLeft, X } from "lucide-react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
-export function Sidebar() {
+export type View = "chat" | "profile"
+
+export interface Conversation {
+  id: string
+  title: string
+}
+
+interface SidebarProps {
+  activeView: View
+  onNavigate: (view: View) => void
+  onNewChat: () => void
+  conversations: Conversation[]
+  onSelectConversation: (id: string) => void
+  collapsed: boolean
+  onToggleCollapse: () => void
+  mobileOpen: boolean
+  onCloseMobile: () => void
+}
+
+export function Sidebar({
+  activeView,
+  onNavigate,
+  onNewChat,
+  conversations,
+  onSelectConversation,
+  collapsed,
+  onToggleCollapse,
+  mobileOpen,
+  onCloseMobile,
+}: SidebarProps) {
   return (
-    <aside className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col">
-      {/* Header */}
-      <div className="p-4 flex items-center justify-between border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <div className="w-5 h-5 rounded-full border-2 border-primary-foreground" />
-          </div>
-          <span className="text-lg font-semibold text-sidebar-foreground font-[var(--font-heading)] tracking-tight">
-            Zyricon
-          </span>
-        </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-sidebar-foreground">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 3H7V7H3V3Z" fill="currentColor" opacity="0.5" />
-            <path d="M9 3H13V7H9V3Z" fill="currentColor" opacity="0.5" />
-            <path d="M3 9H7V13H3V9Z" fill="currentColor" opacity="0.5" />
-            <path d="M9 9H13V13H9V9Z" fill="currentColor" opacity="0.5" />
-          </svg>
-        </Button>
-      </div>
+    <>
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={onCloseMobile}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* New Chat Button */}
-      <div className="p-3">
-        <Button
-          variant="secondary"
-          className="btn-3d btn-glow w-full justify-start gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 font-medium"
-        >
-          <MessageSquarePlus className="w-4 h-4" />
-          New Chat
-        </Button>
-      </div>
+      <aside
+        className={cn(
+          "z-40 bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 w-72 md:relative md:translate-x-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          collapsed ? "md:w-20" : "md:w-80",
+        )}
+      >
+        {/* Header */}
+        <div className="p-4 flex items-center justify-between border-b border-sidebar-border">
+          {/* BITRAIN logo — shown here only when the sidebar is expanded */}
+          <div className={cn("flex items-center gap-2 overflow-hidden", collapsed && "md:hidden")}>
+            <div className="w-8 h-8 shrink-0 rounded-lg overflow-hidden flex items-center justify-center bg-primary/10">
+              <Image src="/bitrain-logo.png" alt="BITRAIN logo" width={32} height={32} className="object-cover" />
+            </div>
+            <span className="text-lg font-semibold text-sidebar-foreground font-[var(--font-heading)] tracking-tight whitespace-nowrap">
+              BITRAIN
+            </span>
+          </div>
 
-      {/* Features Section */}
-      <div className="px-3 flex-1 overflow-y-auto">
-        <div className="mb-4">
-          <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Features</h3>
-          <div className="space-y-1">
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <MessageSquare className="w-4 h-4" />
-              Chat
-            </Button>
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <Archive className="w-4 h-4" />
-              Archived
-            </Button>
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <BookOpen className="w-4 h-4" />
-              Library
-            </Button>
-          </div>
-        </div>
+          {/* Desktop collapse toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapse}
+            className={cn("btn-3d hidden md:flex h-8 w-8 text-sidebar-foreground shrink-0", collapsed && "md:hidden")}
+            aria-label="Collapse sidebar"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </Button>
 
-        {/* Workspaces Section */}
-        <div>
-          <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspaces</h3>
-          <div className="space-y-1">
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <FolderPlus className="w-4 h-4" />
-              New Project
-            </Button>
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <ImageIcon className="w-4 h-4" />
-              Image
-            </Button>
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <Presentation className="w-4 h-4" />
-              Presentation
-            </Button>
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <FileText className="w-4 h-4" />
-              Riset
-            </Button>
-            <Button
-              variant="ghost"
-              className="btn-3d w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium"
-            >
-              <ImageIcon className="w-4 h-4" />
-              Image
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Upgrade Card */}
-      <div className="p-3">
-        <div className="card-3d bg-sidebar-accent rounded-xl p-4 space-y-3">
-          <div className="w-10 h-10 rounded-lg bg-sidebar-accent/50 flex items-center justify-center mx-auto">
-            <Crown className="w-5 h-5 text-primary" />
-          </div>
-          <div className="text-center space-y-1">
-            <h4 className="text-sm font-semibold text-sidebar-foreground font-[var(--font-heading)]">
-              Upgrade to premium
-            </h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Boost productivity with seamless automation and responsive AI, built to adapt to your needs.
-            </p>
-          </div>
-          <Button className="btn-3d btn-glow w-full bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-foreground border border-sidebar-border font-medium">
-            Upgrade
+          {/* Mobile close toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onCloseMobile}
+            className="btn-3d md:hidden h-8 w-8 text-sidebar-foreground shrink-0"
+            aria-label="Close sidebar"
+          >
+            <X className="w-4 h-4" />
           </Button>
         </div>
-      </div>
-    </aside>
+
+        {/* Expand toggle when collapsed (desktop) */}
+        {collapsed && (
+          <div className="hidden md:flex px-3 pt-3 justify-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleCollapse}
+              className="btn-3d h-9 w-9 text-sidebar-foreground"
+              aria-label="Expand sidebar"
+            >
+              <PanelLeft className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* New Chat Button */}
+        <div className="p-3">
+          <Button
+            variant="secondary"
+            onClick={onNewChat}
+            className={cn(
+              "btn-3d btn-glow w-full gap-2 bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/80 font-medium",
+              collapsed ? "md:justify-center md:px-0" : "justify-start",
+            )}
+            aria-label="New chat"
+          >
+            <MessageSquarePlus className="w-4 h-4 shrink-0" />
+            <span className={cn(collapsed && "md:hidden")}>New Chat</span>
+          </Button>
+        </div>
+
+        {/* Recent Chats */}
+        <div className="px-3 flex-1 overflow-y-auto">
+          <div className="mb-4">
+            <h3
+              className={cn(
+                "px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider",
+                collapsed && "md:hidden",
+              )}
+            >
+              Recent Chats
+            </h3>
+            {conversations.length === 0 ? (
+              <p className={cn("px-3 text-sm text-muted-foreground leading-relaxed", collapsed && "md:hidden")}>
+                No conversations yet. Start a new chat.
+              </p>
+            ) : (
+              <div className="space-y-1">
+                {conversations.map((chat) => (
+                  <Button
+                    key={chat.id}
+                    variant="ghost"
+                    onClick={() => onSelectConversation(chat.id)}
+                    className={cn(
+                      "btn-3d w-full gap-3 text-sidebar-foreground hover:bg-sidebar-accent font-medium truncate",
+                      collapsed ? "md:justify-center md:px-0" : "justify-start",
+                    )}
+                  >
+                    <MessageSquare className="w-4 h-4 shrink-0" />
+                    <span className={cn("truncate", collapsed && "md:hidden")}>{chat.title}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Navigation */}
+        <div className="p-3 border-t border-sidebar-border space-y-1">
+          <Button
+            variant="ghost"
+            onClick={() => onNavigate("profile")}
+            className={cn(
+              "btn-3d w-full gap-3 font-medium hover:bg-sidebar-accent text-sidebar-foreground",
+              collapsed ? "md:justify-center md:px-0" : "justify-start",
+              activeView === "profile" && "bg-sidebar-accent",
+            )}
+            aria-label="My Profile"
+          >
+            <User className="w-4 h-4 shrink-0" />
+            <span className={cn(collapsed && "md:hidden")}>My Profile</span>
+          </Button>
+          <Button
+            variant="ghost"
+            className={cn(
+              "btn-3d w-full gap-3 text-sidebar-foreground hover:bg-destructive/20 hover:text-destructive font-medium",
+              collapsed ? "md:justify-center md:px-0" : "justify-start",
+            )}
+            aria-label="Logout"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span className={cn(collapsed && "md:hidden")}>Logout</span>
+          </Button>
+        </div>
+      </aside>
+    </>
   )
 }
