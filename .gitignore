@@ -23,6 +23,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# RAG data (personal notes + generated embeddings, not for git)
+/data/notes/*.txt
+/data/index.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

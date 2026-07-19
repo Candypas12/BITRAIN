@@ -1,11 +1,18 @@
 import { GoogleGenAI } from "@google/genai"
 import { NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { retrieveContext } from "@/lib/rag"
+import { checkRateLimit } from "@/lib/rate-limit"
 
 // Rolling alias to Google's current recommended free-tier flash model —
 // avoids hardcoding a dated model name that gets deprecated for new API keys.
 const MODEL = "gemini-flash-latest"
 const MAX_MESSAGES = 50
 const MAX_MESSAGE_LENGTH = 8000
+const BASE_SYSTEM_INSTRUCTION =
+  "You are BITRAIN, an AI academic assistant for engineering students. Give clear, accurate, concise answers. " +
+  "Format math using LaTeX: wrap inline expressions in single dollar signs (e.g. $R = 15\\ \\Omega$) and standalone " +
+  "equations in double dollar signs (e.g. $$Z = \\sqrt{R^2 + (X_L - X_C)^2}$$)."
 
 interface ChatMessage {
   role: "user" | "model"
@@ -24,6 +31,22 @@ function isChatMessage(value: unknown): value is ChatMessage {
 }
 
 export async function POST(req: Request) {
+  const session = await auth()
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+  const clientKey = session?.user?.email ?? clientIp ?? "anonymous"
+
+  const { allowed, retryAfterMs } = checkRateLimit(clientKey)
+  if (!allowed) {
+    const retryAfterSeconds = Math.ceil(retryAfterMs / 1000)
+    return NextResponse.json(
+      {
+        error: `You're sending messages too quickly. Try again in ${retryAfterSeconds}s.`,
+        retryAfterSeconds,
+      },
+      { status: 429, headers: { "Retry-After": String(retryAfterSeconds) } },
+    )
+  }
+
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     return NextResponse.json(
@@ -50,6 +73,18 @@ export async function POST(req: Request) {
   const ai = new GoogleGenAI({ apiKey })
 
   try {
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content
+    const context = lastUserMessage ? await retrieveContext(ai, lastUserMessage) : []
+
+    const systemInstruction =
+      context.length > 0
+        ? `${BASE_SYSTEM_INSTRUCTION}
+
+Use the following notes as context when relevant. If they don't cover the question, answer from your own knowledge and don't mention the notes.
+
+${context.map((c, i) => `[${i + 1}] (from ${c.file})\n${c.text}`).join("\n\n")}`
+        : BASE_SYSTEM_INSTRUCTION
+
     const response = await ai.models.generateContent({
       model: MODEL,
       contents: messages.map((message) => ({
@@ -57,8 +92,7 @@ export async function POST(req: Request) {
         parts: [{ text: message.content }],
       })),
       config: {
-        systemInstruction:
-          "You are BITRAIN, an AI academic assistant for engineering students. Give clear, accurate, concise answers.",
+        systemInstruction,
       },
     })
 

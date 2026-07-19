@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Space_Grotesk, Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
 const spaceGrotesk = Space_Grotesk({
@@ -46,8 +47,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Loaded from CDN, not bundled: Next's CSS pipeline mishandles KaTeX's
+            relative font url()s once merged into the global CSS chunk. */}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.0/dist/katex.min.css" />
+      </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
         {children}
+        <Toaster theme="dark" position="top-center" />
         <Analytics />
       </body>
     </html>
