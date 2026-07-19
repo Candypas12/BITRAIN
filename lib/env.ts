@@ -29,5 +29,5 @@ export const env = {
   MONGODB_URI: getEnvVariable("MONGODB_URI"),
 
   // OpenAI
-  OPENAI_API_KEY: getEnvVariable("OPENAI_API_KEY"),
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
 } as const;
