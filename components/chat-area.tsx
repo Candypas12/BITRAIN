@@ -4,6 +4,7 @@ import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { ArrowDown, ArrowUp, Check, Copy, SquarePen, User } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
@@ -97,9 +98,13 @@ function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      toast.error("Couldn't copy to clipboard.")
+    }
   }
 
   return (
@@ -302,14 +307,14 @@ export function ChatArea() {
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between gap-3 px-6 py-4 border-b border-border/50 backdrop-blur-sm bg-background/30">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-primary/10 border border-border/30 shadow-lg">
             <Image src="/LOGO-DARK.svg" alt="BITRAIN logo" width={36} height={36} className="object-cover" />
           </div>
           <span className="text-lg font-semibold text-foreground font-[var(--font-heading)] tracking-tight">
             BITRAIN
           </span>
-        </div>
+        </Link>
         {hasMessages && (
           <Button
             variant="ghost"

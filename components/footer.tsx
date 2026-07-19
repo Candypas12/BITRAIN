@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="relative border-t border-border/30 bg-background/50 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-12">
           {/* About */}
           <div id="about">
             <h4 className="font-semibold text-foreground mb-4 font-[var(--font-heading)]">About</h4>
@@ -29,19 +29,6 @@ export function Footer() {
                 <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm">
                   Features
                 </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="font-semibold text-foreground mb-4 font-[var(--font-heading)]">Legal</h4>
-            <ul className="space-y-2">
-              <li>
-                <span className="text-muted-foreground text-sm">Privacy Policy (coming soon)</span>
-              </li>
-              <li>
-                <span className="text-muted-foreground text-sm">Contact (coming soon)</span>
               </li>
             </ul>
           </div>

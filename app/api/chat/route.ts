@@ -72,10 +72,17 @@ export async function POST(req: Request) {
 
   const ai = new GoogleGenAI({ apiKey })
 
+  const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content
+  let context: Awaited<ReturnType<typeof retrieveContext>> = []
   try {
-    const lastUserMessage = [...messages].reverse().find((m) => m.role === "user")?.content
-    const context = lastUserMessage ? await retrieveContext(ai, lastUserMessage) : []
+    if (lastUserMessage) context = await retrieveContext(ai, lastUserMessage)
+  } catch (error) {
+    // Retrieval failing (e.g. embedding quota exhausted) shouldn't break plain
+    // chat — fall back to answering without notes context.
+    console.error("RAG retrieval failed, continuing without context:", error)
+  }
 
+  try {
     const systemInstruction =
       context.length > 0
         ? `${BASE_SYSTEM_INSTRUCTION}

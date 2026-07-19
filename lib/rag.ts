@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises"
+import { readFile, stat } from "node:fs/promises"
 import path from "node:path"
 import type { GoogleGenAI } from "@google/genai"
 
@@ -24,14 +24,30 @@ export interface RetrievedChunk {
 }
 
 let cachedIndex: IndexFile | null | undefined
+let cachedMtimeMs: number | undefined
 
+// Reloads data/index.json whenever its mtime changes, so re-running
+// `npm run build-index` while the server is already running (e.g. resuming
+// after a quota pause) is picked up without needing a restart.
 async function loadIndex(): Promise<IndexFile | null> {
-  if (cachedIndex !== undefined) return cachedIndex
+  let mtimeMs: number
+  try {
+    mtimeMs = (await stat(INDEX_PATH)).mtimeMs
+  } catch {
+    cachedIndex = null
+    cachedMtimeMs = undefined
+    return cachedIndex
+  }
+
+  if (cachedIndex !== undefined && cachedMtimeMs === mtimeMs) return cachedIndex
+
   try {
     const raw = await readFile(INDEX_PATH, "utf-8")
     cachedIndex = JSON.parse(raw) as IndexFile
+    cachedMtimeMs = mtimeMs
   } catch {
     cachedIndex = null
+    cachedMtimeMs = undefined
   }
   return cachedIndex
 }

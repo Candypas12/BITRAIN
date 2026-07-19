@@ -31,7 +31,7 @@ const features = [
   {
     icon: Lightbulb,
     title: "Study Planner",
-    description: "Create personalized study plans and track your progress",
+    description: "Create personalized study plans",
   },
 ]
 

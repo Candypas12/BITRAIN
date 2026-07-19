@@ -18,5 +18,12 @@ export function checkRateLimit(key: string): { allowed: boolean; retryAfterMs: n
 
   timestamps.push(now)
   requestLog.set(key, timestamps)
+
+  // Opportunistic sweep so keys with no recent activity don't sit in memory
+  // forever — cheap relative to the request itself, no separate timer needed.
+  for (const [k, v] of requestLog) {
+    if (v.every((t) => now - t >= WINDOW_MS)) requestLog.delete(k)
+  }
+
   return { allowed: true, retryAfterMs: 0 }
 }
